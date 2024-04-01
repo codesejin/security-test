@@ -13,7 +13,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import javax.sql.DataSource;
 
 @Configuration
-@MapperScan(basePackages = "com.flab.offcoupon.repository")
+@MapperScan(basePackages = "com.spring.security.repository")
 public class DatabaseConfig {
 
     @Value("${mybatis.type-aliases-package}")

@@ -48,10 +48,7 @@ public class SecurityConfig {
                                 ).permitAll()
                                 .requestMatchers(
                                         "/",
-                                        "/api/v1/members/signup",
-                                        "/main",
-                                        "/api/v1/sse/**",
-                                        "/api/v1/event/**")
+                                        "/api/v1/members/**")
                                 .permitAll()
                                 .requestMatchers(
                                         "/member").hasAnyRole("USER")

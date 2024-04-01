@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,11 +32,10 @@ public class MemberController {
     public void test(@AuthenticationPrincipal MemberContext memberContext) {
         System.out.println("test");
 
-        System.out.println("memberContext : " + memberContext);
+        System.out.println("memberContext : " + memberContext); // null
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("authentication : " + authentication); // anonymousUser
         MemberContext memberContext1 = (MemberContext) authentication.getPrincipal();
-        System.out.println("memberContext1 : " + memberContext1);
+        System.out.println("memberContext1 : " + memberContext1); // ClassCastException
     }
-
 }
