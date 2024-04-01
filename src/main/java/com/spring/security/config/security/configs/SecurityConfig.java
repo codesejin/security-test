@@ -18,6 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 @RequiredArgsConstructor
 @Configuration
@@ -90,6 +92,11 @@ public class SecurityConfig {
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
                         .expiredUrl(LOGIN_URL)
+                )
+                .securityContext((securityContext) -> securityContext
+                        .securityContextRepository(new DelegatingSecurityContextRepository(
+                                new HttpSessionSecurityContextRepository()
+                        ))
                 );
         return http.build();
     }
