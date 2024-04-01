@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 @RequiredArgsConstructor
 @Configuration
@@ -93,11 +94,15 @@ public class SecurityConfig {
                         .maxSessionsPreventsLogin(false)
                         .expiredUrl(LOGIN_URL)
                 )
-                .securityContext((securityContext) -> securityContext
-                        .securityContextRepository(new DelegatingSecurityContextRepository(
-                                new HttpSessionSecurityContextRepository()
-                        ))
-                );
+//                .securityContext((securityContext) -> securityContext
+//                        .securityContextRepository(new DelegatingSecurityContextRepository(
+//                                new HttpSessionSecurityContextRepository()
+//                        ))
+//                );
+                .securityContext((securityContext) -> {
+                    securityContext.securityContextRepository(delegatingSecurityContextRepository());
+                    securityContext.requireExplicitSave(true);
+                });
         return http.build();
     }
     @Bean
@@ -108,5 +113,13 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncryptor();
+    }
+
+    @Bean
+    public DelegatingSecurityContextRepository delegatingSecurityContextRepository() {
+        return new DelegatingSecurityContextRepository(
+                new RequestAttributeSecurityContextRepository(),
+                new HttpSessionSecurityContextRepository()
+        );
     }
 }
