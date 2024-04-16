@@ -75,14 +75,9 @@ public class SecurityConfig {
                         .deleteCookies("SESSIONID")
                 );
         http
+                // 접근 거부 예외
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedHandler(customAccessDeniedHandler)
-                );
-        http.
-                rememberMe(rememberMe -> rememberMe
-                        .rememberMeCookieName("remember")
-                        .tokenValiditySeconds(3600)
-                        .userDetailsService(userDetailsService)
                 );
         http
                 .sessionManagement(sessionManagement -> sessionManagement
@@ -91,14 +86,8 @@ public class SecurityConfig {
                         .maxSessionsPreventsLogin(false)
                         .expiredUrl(LOGIN_URL)
                 )
-//                .securityContext((securityContext) -> securityContext
-//                        .securityContextRepository(new DelegatingSecurityContextRepository(
-//                                new HttpSessionSecurityContextRepository()
-//                        ))
-//                );
                 .securityContext((securityContext) -> {
-                    securityContext.securityContextRepository(delegatingSecurityContextRepository());
-                    securityContext.requireExplicitSave(true);
+                    securityContext.requireExplicitSave(false);
                 });
         return http.build();
     }
@@ -112,11 +101,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncryptor();
     }
 
-    @Bean
-    public DelegatingSecurityContextRepository delegatingSecurityContextRepository() {
-        return new DelegatingSecurityContextRepository(
-                new RequestAttributeSecurityContextRepository(),
-                new HttpSessionSecurityContextRepository()
-        );
-    }
 }

@@ -11,7 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -27,15 +30,19 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(memberService.signUp(signupMemberRequestDto));
     }
 
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/test")
-    public void test(@AuthenticationPrincipal MemberContext memberContext) {
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/test")
+    public void test() {
         System.out.println("test");
-
-        System.out.println("memberContext : " + memberContext); // null
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("authentication : " + authentication); // anonymousUser
-        MemberContext memberContext1 = (MemberContext) authentication.getPrincipal();
-        System.out.println("memberContext1 : " + memberContext1); // ClassCastException
+        SecurityContextHolderStrategy contextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+        System.out.println(">> contextHolderStrategy : " + contextHolderStrategy); // org.springframework.security.core.context.ThreadLocalSecurityContextHolderStrategy@7e1fbf12
+        SecurityContext context = contextHolderStrategy.getContext();
+        System.out.println(">> context : " + context); // SecurityContextImpl [Authentication=AnonymousAuthenticationToken
+        Authentication authentication = context.getAuthentication();
+        System.out.println(">> authentication : " + authentication); // AnonymousAuthenticationToken
+        MemberContext memberContext = (MemberContext) authentication.getPrincipal();
+        System.out.println(">> memberContext : " + memberContext); // ClassCastException
+        String username = memberContext.getUsername();
+        System.out.println(">> username : " + username);
     }
 }

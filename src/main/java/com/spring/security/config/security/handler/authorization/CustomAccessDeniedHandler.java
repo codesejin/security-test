@@ -1,5 +1,6 @@
 package com.spring.security.config.security.handler.authorization;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.security.util.ResponseDTO;
 import jakarta.servlet.ServletException;
@@ -22,7 +23,7 @@ import static com.spring.security.exception.member.MemberErrorMessage.AUTHORIZED
 @Component
 @RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
-
+    // 인증받은 상태에서 접근이 거부되었을때 해당 핸들러 호출
     private final ObjectMapper objectMapper;
 
     @Override
@@ -32,9 +33,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
         logErrorDetails(accessDeniedException, request.getRequestURI());
 
-        configureResponse(response);
-
-        writeErrorResponse(response);
+        handleAccessDeniedResponse(response);
     }
 
     private void logErrorDetails(AccessDeniedException accessDeniedException, String requestUri) {
@@ -42,13 +41,10 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         log.error("Request Uri: {}", requestUri);
     }
 
-    private void configureResponse(HttpServletResponse response) {
+    private void handleAccessDeniedResponse(HttpServletResponse response) throws IOException {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-    }
-
-    private void writeErrorResponse(HttpServletResponse response) throws IOException {
         response.getWriter().write(objectMapper.writeValueAsString(ResponseDTO.getFailResult(AUTHORIZED_BUT_NOT_AUTHENTICATED)));
     }
 }
