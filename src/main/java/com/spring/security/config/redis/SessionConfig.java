@@ -1,6 +1,8 @@
 package com.spring.security.config.redis;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,13 +10,19 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.session.MapSession;
+import org.springframework.session.config.SessionRepositoryCustomizer;
+import org.springframework.session.data.redis.RedisSessionMapper;
+import org.springframework.session.data.redis.RedisSessionRepository;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
+import java.util.Map;
+import java.util.function.BiFunction;
+
+@RequiredArgsConstructor
 @Configuration
 @EnableRedisHttpSession
 public class SessionConfig {
@@ -27,6 +35,7 @@ public class SessionConfig {
 
     @Value("${spring.data.redis.password}")
     private String redisPassword;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -45,12 +54,41 @@ public class SessionConfig {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(springSessionDefaultRedisSerializer());
+        redisTemplate.setHashValueSerializer(springSessionDefaultRedisSerializer(objectMapper));
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }
     @Bean
-    public RedisSerializer<Object> springSessionDefaultRedisSerializer(){
-        return new Jackson2JsonRedisSerializer<>(Object.class);
+    public RedisSerializer<Object> springSessionDefaultRedisSerializer(ObjectMapper objectMapper) {
+        return new GenericJackson2JsonRedisSerializer(objectMapper);
+    }
+
+    @Bean
+    SessionRepositoryCustomizer<RedisSessionRepository> redisSessionRepositoryCustomizer() {
+        return (redisSessionRepository) -> redisSessionRepository
+                .setRedisSessionMapper(new SafeRedisSessionMapper(redisSessionRepository));
+    }
+
+    static class SafeRedisSessionMapper implements BiFunction<String, Map<String, Object>, MapSession> {
+
+        private final RedisSessionMapper delegate = new RedisSessionMapper();
+
+        private final RedisSessionRepository sessionRepository;
+
+        SafeRedisSessionMapper(RedisSessionRepository sessionRepository) {
+            this.sessionRepository = sessionRepository;
+        }
+
+        @Override
+        public MapSession apply(String sessionId, Map<String, Object> map) {
+            try {
+                return this.delegate.apply(sessionId, map);
+            }
+            catch (IllegalStateException ex) {
+                this.sessionRepository.deleteById(sessionId);
+                return null;
+            }
+        }
+
     }
 }

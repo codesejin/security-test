@@ -34,15 +34,17 @@ public class MemberController {
     @GetMapping("/test")
     public void test() {
         System.out.println("test");
-        SecurityContextHolderStrategy contextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
-        System.out.println(">> contextHolderStrategy : " + contextHolderStrategy); // org.springframework.security.core.context.ThreadLocalSecurityContextHolderStrategy@7e1fbf12
-        SecurityContext context = contextHolderStrategy.getContext();
-        System.out.println(">> context : " + context); // SecurityContextImpl [Authentication=AnonymousAuthenticationToken
-        Authentication authentication = context.getAuthentication();
-        System.out.println(">> authentication : " + authentication); // AnonymousAuthenticationToken
-        MemberContext memberContext = (MemberContext) authentication.getPrincipal();
-        System.out.println(">> memberContext : " + memberContext); // ClassCastException
-        String username = memberContext.getUsername();
-        System.out.println(">> username : " + username);
+//        SecurityContextHolderStrategy contextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+//        System.out.println(">> contextHolderStrategy : " + contextHolderStrategy); // org.springframework.security.core.context.ThreadLocalSecurityContextHolderStrategy@7e1fbf12
+//        SecurityContext context = contextHolderStrategy.getContext();
+//        System.out.println(">> context : " + context); // SecurityContextImpl [Authentication=AnonymousAuthenticationToken
+//        Authentication authentication = context.getAuthentication();
+//        System.out.println(">> authentication : " + authentication); // AnonymousAuthenticationToken
+//        MemberContext memberContext = (MemberContext) authentication.getPrincipal();
+//        System.out.println(">> memberContext : " + memberContext); // ClassCastException
+//        String username = memberContext.getUsername();
+//        System.out.println(">> username : " + username);
+
+        Authentication authentication = SecurityContextHolder.getContextHolderStrategy().getContext().getAuthentication();
     }
 }

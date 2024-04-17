@@ -80,13 +80,15 @@ public class SecurityConfig {
                         .accessDeniedHandler(customAccessDeniedHandler)
                 );
         http
-                .sessionManagement(sessionManagement -> sessionManagement
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                        .expiredUrl(LOGIN_URL)
-                )
+//                .sessionManagement(sessionManagement -> sessionManagement
+//                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+//                        .maximumSessions(1)
+//                        .maxSessionsPreventsLogin(false)
+//                        .expiredUrl(LOGIN_URL)
+//                )
                 .securityContext((securityContext) -> {
+                    // true면 SecurityContextHolderFilter,
+                    // false면 SecurityContextPersistanceFilter 실행 (deprecated됨)
                     securityContext.requireExplicitSave(false);
                 });
         return http.build();
